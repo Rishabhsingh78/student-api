@@ -11,23 +11,23 @@ import (
 	"time"
 
 	config "github.com/Rishabhsingh78/student-api/internal"
+	"github.com/Rishabhsingh78/student-api/internal/http/handlers/student"
 )
 
 func main() {
 	cfg := config.MustLoad() // load config here
 	// setup router
 	router := http.NewServeMux()
-	router.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to student api"))
-	})
+	router.HandleFunc("POST /api/students", student.New())
+
 	server := http.Server{
 		Addr:    cfg.Addr,
 		Handler: router,
 	}
 	slog.Info("Server Started", slog.String("address", cfg.Addr))
 	done := make(chan os.Signal, 1)
-	// yaha pe jaise ctrl+c press kiya to done k channel me signal mil gya 
-	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGABRT) 
+	// yaha pe jaise ctrl+c press kiya to done k channel me signal mil gya
+	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGABRT)
 
 	go func() {
 		err := server.ListenAndServe()
@@ -35,7 +35,7 @@ func main() {
 			log.Fatal("failed to start server")
 		}
 	}()
-	<-done // yaah jaise hi usko yeh receive hua to server shutdown ho gya 
+	<-done // yaah jaise hi usko yeh receive hua to server shutdown ho gya
 	slog.Info("Shutting down the server")
 	ctx, cancle := context.WithTimeout(context.Background(), 5*time.Second)
 
